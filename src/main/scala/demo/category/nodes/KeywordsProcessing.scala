@@ -11,36 +11,45 @@ import scala.io.Source
  * @author: LiamGao
  * @create: 2022-02-15 13:59
  */
-class KeywordsProcessing(gId: Long) extends NodeDemoMethod{
-  override val label = "keywords"
-  override val delimiter = "¤"
-  override var globalId = gId
-  override val srcFile: String = "/data/glx/ncbi/keywords.csv"
-  override val targetFile: String = "/data/glx/ncbi/keywords-panda.csv"
+class KeywordsProcessing(gId: Long){
+  val label = "keywords"
+  val delimiter = "¤"
+  var globalId = gId
+  val srcFile: String = "/opt/hadoop/work/pandadb/neo4j/nodes/keywords.csv"
+  val targetFile: String = "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/keywords-panda.csv"
+  val pid2uid: String = "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/keywords-pid2uid.csv"
 
-  val id2md5 = new BufferedWriter(new FileWriter("/data/glx/ncbi/keywords-id2md5.csv"), 1024 * 1024 * 10)
+  val id2md5 = new BufferedWriter(new FileWriter(pid2uid), 1024 * 1024 * 10)
   val src = Source.fromFile(new File(srcFile))
   val target = new BufferedWriter(new FileWriter(targetFile), 1024 * 1024 * 10)
-  override def run(): Long = {
+
+  def run(): Long = {
     val iter = src.getLines()
+    val oldHeader = iter.next().split(delimiter)
+    val pHeader = oldHeader.slice(1, oldHeader.length).mkString(delimiter)
     // header
-    target.write(s":ID${delimiter}:LABEL${delimiter}id${delimiter}keyword")
+    target.write(s":ID${delimiter}:LABEL${delimiter}$pHeader")
     target.newLine()
 
     // id2md5
     id2md5.write(s":ID${delimiter}id")
     id2md5.newLine()
 
-    // body
-    iter.next() // remove header
     while (iter.hasNext){
       val data = iter.next()
-      id2md5.write(s"$globalId$delimiter${data.split(delimiter)(0)}")
-      id2md5.newLine()
-      val lineData = s"$globalId$delimiter$label$delimiter$data"
-      globalId += 1
-      target.write(lineData)
-      target.newLine()
+      val index = data.indexOf(delimiter)
+      val id = data.slice(0, index)
+      val resData = data.slice(index + 1, data.length)
+
+      if  (data.length == 3){
+        id2md5.write(s"$globalId$delimiter$id")
+        id2md5.newLine()
+        val lineData = s"$globalId$delimiter$label$delimiter$resData"
+        globalId += 1
+        target.write(lineData)
+        target.newLine()
+      }
+      else println(data.mkString(delimiter))
     }
 
     target.flush()

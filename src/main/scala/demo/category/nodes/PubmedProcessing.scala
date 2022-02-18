@@ -15,10 +15,10 @@ class PubmedProcessing(gId: Long) extends NodeDemoMethod{
   override val label: String = "pubmed"
   override val delimiter: String = "¤"
   override var globalId: Long = gId
-  override val srcFile: String = "/data/glx/ncbi/pubmed.csv"
-  override val targetFile: String = "/data/glx/ncbi/pubmed-panda.csv"
+  override val srcFile: String = "/opt/hadoop/work/pandadb/pubmed.csv"
+  override val targetFile: String = "/opt/hadoop/work/pandadb/glx/pubmed-panda.csv"
 
-  val id2uid = new BufferedWriter(new FileWriter("/data/glx/ncbi/pubmed-id2uid.csv"), 1024 * 1024 * 10)
+  val id2uid = new BufferedWriter(new FileWriter("/opt/hadoop/work/pandadb/glx/pubmed-id2uid.csv"), 1024 * 1024 * 10)
   val src = Source.fromFile(new File(srcFile))
   val target = new BufferedWriter(new FileWriter(targetFile), 1024 * 1024 * 10)
 
@@ -36,12 +36,18 @@ class PubmedProcessing(gId: Long) extends NodeDemoMethod{
     iter.next() // remove header
     while (iter.hasNext){
       val data = iter.next()
-      id2uid.write(s"$globalId$delimiter${data.split(delimiter)(0)}")
-      id2uid.newLine()
-      val lineData = s"$globalId$delimiter$label$delimiter$data"
-      globalId += 1
-      target.write(lineData)
-      target.newLine()
+      val index = data.indexOf(delimiter)
+      val id = data.slice(0, index)
+      val resData = data.slice(index + 1, data.length)
+      if (data.length > 1){
+        id2uid.write(s"$globalId$delimiter$id")
+        id2uid.newLine()
+        val lineData = s"$globalId$delimiter$label$delimiter$resData"
+        globalId += 1
+        target.write(lineData)
+        target.newLine()
+      }
+      else println(data.mkString(delimiter))
     }
 
     target.flush()

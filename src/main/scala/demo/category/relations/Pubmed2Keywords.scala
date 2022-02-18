@@ -15,7 +15,7 @@ class Pubmed2Keywords extends RelationDemoMethod{
   override val typeName: String = "pub2key"
   override val delimiter: String = "¤"
   override var globalId: Long = 1
-  override val srcFile: String = "/data/glx/ncbi/pubmed_keyword_rel_id.csv"
+  override val srcFile: String = "/data/glx/ncbi/new_pubmed_keywords_rel.csv"
   override val targetFile: String = "/data/glx/ncbi/pubmed2keyword.csv"
 
   val src = Source.fromFile(new File(srcFile))
@@ -27,8 +27,8 @@ class Pubmed2Keywords extends RelationDemoMethod{
     target.newLine()
     iter.next()
     while (iter.hasNext){
-      val data = iter.next().split(delimiter)
-      val lineData = s"$globalId$delimiter$typeName$delimiter${data(0)}$delimiter${data(1)}"
+      val data = iter.next()
+      val lineData = s"$globalId$delimiter$typeName$delimiter$data"
       target.write(lineData)
       target.newLine()
       globalId += 1
