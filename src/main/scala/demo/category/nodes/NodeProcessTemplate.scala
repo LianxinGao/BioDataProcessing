@@ -9,7 +9,7 @@ import scala.io.Source
  * @author: LiamGao
  * @create: 2022-02-18 10:47
  */
-class NodeProcess(gId: Long, label: String, delimiter: String, srcFile: String, targetFile: String, pid2uidFile: String) {
+class NodeProcessTemplate(gId: Long, label: String, delimiter: String, srcFile: String, targetFile: String, pid2uidFile: String) {
   var globalId: Long = gId
   val pid2uid = new BufferedWriter(new FileWriter(pid2uidFile), 1024 * 1024 * 10)
   val src = Source.fromFile(new File(srcFile))

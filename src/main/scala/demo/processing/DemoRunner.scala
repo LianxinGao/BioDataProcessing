@@ -1,8 +1,8 @@
 package demo.processing
 
-import demo.DemoMethod
-import demo.category.nodes.{KeywordsProcessing, NodeProcess, PubmedProcessing}
-import demo.category.relations.{CleanBlankLine, Pubmed2Keywords}
+import demo.category.relations.{RelationProcessTemplate}
+
+import java.io.File
 
 /**
  * @program: BioDataProcessing
@@ -11,56 +11,25 @@ import demo.category.relations.{CleanBlankLine, Pubmed2Keywords}
  * @create: 2022-02-15 09:44
  */
 object DemoRunner {
+  def  fileName2LabelName(fileName: String): String = fileName.slice(0, fileName.length - 4)
+
   def main(args: Array[String]): Unit = {
-    val bioproject = new NodeProcess(1, "bioproject", "¤",
-    "/opt/hadoop/work/pandadb/neo4j/nodes/bioproject.csv",
-    "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/panda-bioproject.csv",
-    "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/panda-bioproject-IdMap.csv")
+    val dataPath = args(0)
 
-    val bid = bioproject.run()
+    var globalId: Long = 1
+    val fileNames = new File(dataPath).list().filter(p => p.endsWith(".csv"))
 
-    val gene = new NodeProcess(bid, "gene", "¤",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/gene.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/panda-gene.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/panda-gene-IdMap.csv")
-
-    val genid = gene.run()
-
-    val genome = new NodeProcess(genid, "genome", "¤",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/genome.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/panda-genome.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/panda-genome-IdMap.csv")
-
-    val genomeId = genome.run()
-
-    val keywords = new NodeProcess(genomeId, "keywords", "¤",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/keywords.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/panda-keywords.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/panda-keywords-IdMap.csv")
-
-    val keywordsId = keywords.run()
-
-    val nucleotide = new NodeProcess(keywordsId, "nucleotide", "¤",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/nucleotide.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/panda-nucleotide.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/panda-nucleotide-IdMap.csv")
-
-    val nucleotideId = nucleotide.run()
-
-    val pubmed = new NodeProcess(nucleotideId, "pubmed", "¤",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/pubmed.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/panda-pubmed.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/panda-pubmed-IdMap.csv")
-
-    val pubmedId = pubmed.run()
-
-    val taxonomy = new NodeProcess(pubmedId, "taxonomy", "¤",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/taxonomy.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedNodes/panda-taxonomy.csv",
-      "/opt/hadoop/work/pandadb/neo4j/nodes/processedIds/panda-taxonomy-IdMap.csv")
-
-    val taxonomyId = taxonomy.run()
-
-    println(taxonomyId)
+//    fileNames.foreach(fileName => {
+//      val label = fileName.slice(0, fileName.length - 4)
+//      val node = new NodeProcess(globalId, label, "¤",
+//        s"$dataPath/$fileName", s"$dataPath/processed/${fileName}_p", s"$dataPath/idMap/${fileName}_idMap")
+//      globalId = node.run()
+//    })
+    fileNames.foreach(fileName => {
+      val label = fileName.slice(0, fileName.length - 4)
+      val rel = new RelationProcessTemplate(globalId, label, "¤",
+        s"$dataPath/$fileName", s"$dataPath/rels/${fileName}_p")
+      globalId = rel.run()
+    })
   }
 }
